@@ -74,12 +74,50 @@ suite('Functional Tests', function () {
               done();
             });
         });
+
+        test('Existing title in request body', function (done) {
+          chai
+            .request(server)
+            .post('/api/books')
+            .send({ title: 'test1' })
+            .end((err, res) => {
+              assert.equal(res.text, 'title already exists');
+              done();
+            });
+        });
       }
     );
 
     suite('GET /api/books => array of books', function () {
       test('Test GET /api/books', function (done) {
-        //done();
+        chai
+          .request(server)
+          .get('/api/books')
+          .end((err, res) => {
+            assert.equal(res.status, 200);
+            assert.isArray(res.body, 'Response should be an array');
+            // Books contain title, _id, and commentcount
+
+            const firstBook = resBody[0];
+            if (firstBook) {
+              assert.property(
+                firstBook,
+                'title',
+                'Book should contain a title'
+              );
+              assert.property(firstBook, '_id', 'Book should contain an _id');
+              assert.property(
+                firstBook,
+                'commentcount',
+                'Book should contain a commentcount'
+              );
+              assert.isNumber(
+                firstBook.commentcount,
+                'commentcount should be a number'
+              );
+            }
+            done();
+          });
       });
     });
 
