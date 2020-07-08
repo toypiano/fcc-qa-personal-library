@@ -19,13 +19,16 @@ module.exports = function (app) {
     .route('/api/books')
     .get(function (req, res) {
       MongoClient.connect(MONGODB_CONNECTION_STRING, (err, client) => {
+        expect(err, 'database error').to.not.exist;
         const db = client.db('project');
         const books = db.collection('books');
 
         books.find().toArray((err, docs) => {
           //response will be array of book objects
           //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
-
+          expect(err, 'database find error').to.not.exist;
+          expect(docs).to.exist;
+          expect(docs).to.be.a('array');
           const books = docs.map((book) => ({
             ...book,
             commentcount: book.comments.length,
@@ -40,10 +43,12 @@ module.exports = function (app) {
         return res.send('missing title');
       }
       MongoClient.connect(MONGODB_CONNECTION_STRING, (err, client) => {
+        expect(err, 'database error').to.not.exist;
         const db = client.db('project');
         const books = db.collection('books');
 
         books.findOne({ title }, (err, doc) => {
+          expect(err, 'database insert error').to.not.exist;
           if (doc) {
             return res.send('Title already exists');
           }
@@ -65,6 +70,7 @@ module.exports = function (app) {
     .delete(function (req, res) {
       //if successful response will be 'complete delete successful'
       MongoClient.connect(MONGODB_CONNECTION_STRING, (err, client) => {
+        expect(err, 'database error').to.not.exist;
         const db = client.db('project');
         const books = db.collection('books');
         books.deleteMany({}, (err, result) => {
@@ -79,10 +85,12 @@ module.exports = function (app) {
       const bookid = req.params.id;
 
       MongoClient.connect(MONGODB_CONNECTION_STRING, (err, client) => {
+        expect(err, 'database error').to.not.exist;
         const db = client.db('project');
         const books = db.collection('books');
 
         books.findOne({ _id: new ObjectId(bookid) }, (err, result) => {
+          expect(err, 'database find error').to.not.exist;
           //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
           if (!result) {
             return res.send('no book exists');
@@ -100,6 +108,7 @@ module.exports = function (app) {
       }
 
       MongoClient.connect(MONGODB_CONNECTION_STRING, (err, client) => {
+        expect(err, 'database error').to.not.exist;
         const db = client.db('project');
         const books = db.collection('books');
 
@@ -112,6 +121,7 @@ module.exports = function (app) {
             returnOriginal: false,
           },
           (err, result) => {
+            expect(err, 'database findOneAndUpdate error').to.not.exist;
             //json res format same as .get
             return res.json(result.value);
           }
@@ -122,13 +132,13 @@ module.exports = function (app) {
       const bookid = req.params.id;
 
       MongoClient.connect(MONGODB_CONNECTION_STRING, (err, client) => {
+        expect(err, 'database error').to.not.exist;
         const db = client.db('project');
         const books = db.collection('books');
 
         books.findOneAndDelete({ _id: new ObjectId(bookid) }, (err, result) => {
-          if (err) {
-            return res.send('delete failed');
-          }
+          expect(err, 'findOneAndDelete error').to.not.exist;
+          expect(result, 'result error').to.exist;
           //if successful response will be 'delete successful'
           return res.send('delete successful');
         });
