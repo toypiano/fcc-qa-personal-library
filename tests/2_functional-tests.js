@@ -158,7 +158,28 @@ suite('Functional Tests', function () {
       'POST /api/books/[id] => add comment/expect book object with id',
       function () {
         test('Test POST /api/books/[id] with comment', function (done) {
-          //done();
+          chai
+            .request(server)
+            .post(`/api/books/${id1}`)
+            .send({ comment: 'test comment' })
+            .end((err, res) => {
+              const book = res.body;
+              assert.property(book, 'title', 'Book should contain a title');
+              assert.property(book, '_id', 'Book should contain an _id');
+              assert.equal(
+                book._id,
+                id1,
+                '_id from returned book not matching the queried id'
+              );
+              assert.property(book, 'comments', 'Book should contain comments');
+              assert.isArray(book.comments, 'Comments should be an array');
+              assert.equal(
+                book.comments[0],
+                'test comment',
+                'Comments should include test comment submitted'
+              );
+              done();
+            });
         });
       }
     );
