@@ -4,12 +4,21 @@ require('dotenv').config();
 var express = require('express');
 var bodyParser = require('body-parser');
 var cors = require('cors');
+var helmet = require('helmet');
+var nocache = require('nocache');
 
 var apiRoutes = require('./routes/api.js');
 var fccTestingRoutes = require('./routes/fcctesting.js');
 var runner = require('./test-runner');
 
 var app = express();
+
+app.use(nocache());
+app.use(
+  helmet.hidePoweredBy({
+    setTo: 'PHP 4.2.0',
+  })
+);
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
