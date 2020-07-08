@@ -46,6 +46,7 @@ suite('Functional Tests', function () {
   /*
    * ----[END of EXAMPLE TEST]----
    */
+  let id1;
 
   suite('Routing tests', function () {
     suite(
@@ -57,6 +58,7 @@ suite('Functional Tests', function () {
             .post('/api/books')
             .send({ title: 'test1' })
             .end((err, res) => {
+              id1 = res._id;
               assert.equal(res.status, 200);
               assert.property(res.body, 'title', 'Book should contain a title');
               assert.property(res.body, '_id', 'Book should contain an _id');
@@ -123,11 +125,32 @@ suite('Functional Tests', function () {
 
     suite('GET /api/books/[id] => book object with [id]', function () {
       test('Test GET /api/books/[id] with id not in db', function (done) {
-        //done();
+        chai
+          .request(server)
+          .get(`/api/books/id_not_int_db`)
+          .end((err, res) => {
+            assert.equal(res.text, 'no book exists');
+            done();
+          });
       });
 
       test('Test GET /api/books/[id] with valid id in db', function (done) {
-        //done();
+        chai
+          .request(server)
+          .get(`/api/books/${id1}`)
+          .end((err, res) => {
+            const book = res.body;
+            assert.property(book, 'title', 'Book should contain a title');
+            assert.property(book, '_id', 'Book should contain an _id');
+            assert.equal(
+              book._id,
+              id1,
+              '_id from returned book not matching the queried id'
+            );
+            assert.property(book, 'comments', 'Book should contain comments');
+            assert.isArray(book.comments, 'Comments should be an array');
+            done();
+          });
       });
     });
 
